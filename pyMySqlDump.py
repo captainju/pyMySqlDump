@@ -12,6 +12,7 @@ except ImportError:
 class simpleapp_wx(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title)
+        self.checkboxes = {}
         self.parent = parent
         self.initialize()
 
@@ -19,14 +20,15 @@ class simpleapp_wx(wx.Frame):
 
         sizer = wx.GridBagSizer()
 
-        columnNum = 1
+        columnNum = 0
         for dbinfo in dbutil.getDatabasesNamesAndSizes():
-            checkBox = wx.CheckBox(self, -1, label=dbinfo[0]+" "+str(int(dbinfo[1]))+" MB")
+            checkBox = wx.CheckBox(self, -1, label=dbinfo[0]+" ~"+str(int(dbinfo[1]))+" MB")
             checkBox.SetValue(True)
+            self.checkboxes[dbinfo[0]] = checkBox
             sizer.Add(checkBox, (columnNum, 0))
             columnNum = columnNum + 1
 
-        button = wx.Button(self, -1, label="Dump !")
+        button = wx.Button(self, -1, label="Dump'em all !")
         sizer.Add(button, (columnNum, 1))
         self.Bind(wx.EVT_BUTTON, self.OnButtonClick, button)
 
@@ -37,8 +39,14 @@ class simpleapp_wx(wx.Frame):
 
     def OnButtonClick(self, event):
         print "dumping..."
+        for dbname in self.checkboxes.iterkeys():
+            if self.checkboxes[dbname].GetValue():
+                dbutil.dumpDatabase(dbname)
+
+        #os.system("mysqldump -u %s --password=%s %s > %s%s.sql" % (self.username, self.password, dbname, self.path, dbname))
+
 
 if __name__ == "__main__":
     app = wx.App()
-    frame = simpleapp_wx(None, -1, 'my application')
+    frame = simpleapp_wx(None, -1, 'pyMySqlDump')
     app.MainLoop()
