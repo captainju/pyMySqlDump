@@ -50,12 +50,13 @@ class simpleapp_wx(wx.Frame):
     def OnDumpButtonClick(self, event):
         path = self.GetStorePath()
         if path != '':
-            path = path + "/" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            path = path + "/" + strftime("%Y%m%d_%H%M%S", gmtime())
             os.makedirs(path)
             print "dumping into "+path+"..."
             for dbname in self.checkboxes.iterkeys():
                 if self.checkboxes[dbname].GetValue():
                     dbutil.dumpDatabase(dbname, path)
+            print "Complete !"
 
     def OnAllButtonClick(self, event):
         for dbname in self.checkboxes.iterkeys():
