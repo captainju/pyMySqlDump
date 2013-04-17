@@ -17,10 +17,10 @@ def getDatabasesNamesAndSizes():
     return result
 
 
-def dumpDatabase(dbName):
+def dumpDatabase(dbName, path):
     print "dump " + dbName
-    cmd = "mysqldump -u %s --password=%s --lock-tables=false --skip-comments --add-drop-database %s | gzip > %s%s.sql.gz"
-    cmd = cmd % ("root", "", dbName, "/tmp/", dbName)
+    cmd = "mysqldump -u %s --password=%s --lock-tables=false --skip-comments --add-drop-database %s | gzip > \"%s/%s.sql.gz\""
+    cmd = cmd % ("root", "", dbName, path, dbName)
     try:
         retcode = subprocess.call(cmd, shell=True)
         if retcode < 0:

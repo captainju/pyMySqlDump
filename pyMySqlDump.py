@@ -2,6 +2,8 @@
 # -*- coding: iso-8859-1 -*-
 
 import dbutil
+import os
+from time import gmtime, strftime
 
 try:
     import wx
@@ -46,10 +48,14 @@ class simpleapp_wx(wx.Frame):
         self.Show(True)
 
     def OnDumpButtonClick(self, event):
-        print "dumping..."
-        for dbname in self.checkboxes.iterkeys():
-            if self.checkboxes[dbname].GetValue():
-                dbutil.dumpDatabase(dbname)
+        path = self.GetStorePath()
+        if path != '':
+            path = path + "/" + strftime("%Y-%m-%d %H:%M:%S", gmtime())
+            os.makedirs(path)
+            print "dumping into "+path+"..."
+            for dbname in self.checkboxes.iterkeys():
+                if self.checkboxes[dbname].GetValue():
+                    dbutil.dumpDatabase(dbname, path)
 
     def OnAllButtonClick(self, event):
         for dbname in self.checkboxes.iterkeys():
@@ -58,6 +64,14 @@ class simpleapp_wx(wx.Frame):
     def OnNoneButtonClick(self, event):
         for dbname in self.checkboxes.iterkeys():
             self.checkboxes[dbname].SetValue(False)
+
+    def GetStorePath(self):
+        self.dirname = ''
+        dlg = wx.DirDialog(self, "Where to put ?", "")
+        if dlg.ShowModal() == wx.ID_OK:
+            self.dirname = dlg.GetPath()
+        dlg.Destroy()
+        return self.dirname
 
 
 if __name__ == "__main__":
