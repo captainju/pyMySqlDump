@@ -28,22 +28,36 @@ class simpleapp_wx(wx.Frame):
             sizer.Add(checkBox, (columnNum, 0))
             columnNum = columnNum + 1
 
-        button = wx.Button(self, -1, label="Dump'em all !")
-        sizer.Add(button, (columnNum, 1))
-        self.Bind(wx.EVT_BUTTON, self.OnButtonClick, button)
+        dumpButton = wx.Button(self, -1, label="Dump'em all !")
+        sizer.Add(dumpButton, (columnNum, 1))
+        self.Bind(wx.EVT_BUTTON, self.OnDumpButtonClick, dumpButton)
+
+        allButton = wx.Button(self, -1, label="all")
+        sizer.Add(allButton, (columnNum, 0))
+        self.Bind(wx.EVT_BUTTON, self.OnAllButtonClick, allButton)
+
+        noneButton = wx.Button(self, -1, label="none")
+        sizer.Add(noneButton, (columnNum+1, 0))
+        self.Bind(wx.EVT_BUTTON, self.OnNoneButtonClick, noneButton)
 
         sizer.AddGrowableCol(0)
         self.SetSizerAndFit(sizer)
         self.SetSizeHints(-1, self.GetSize().y, -1, self.GetSize().y)
         self.Show(True)
 
-    def OnButtonClick(self, event):
+    def OnDumpButtonClick(self, event):
         print "dumping..."
         for dbname in self.checkboxes.iterkeys():
             if self.checkboxes[dbname].GetValue():
                 dbutil.dumpDatabase(dbname)
 
-        #os.system("mysqldump -u %s --password=%s %s > %s%s.sql" % (self.username, self.password, dbname, self.path, dbname))
+    def OnAllButtonClick(self, event):
+        for dbname in self.checkboxes.iterkeys():
+            self.checkboxes[dbname].SetValue(True)
+
+    def OnNoneButtonClick(self, event):
+        for dbname in self.checkboxes.iterkeys():
+            self.checkboxes[dbname].SetValue(False)
 
 
 if __name__ == "__main__":
