@@ -14,6 +14,11 @@ except ImportError:
 class simpleapp_wx(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title)
+
+        # icon
+        ico = wx.Icon('pyMySqlDump.ico', wx.BITMAP_TYPE_ICO)
+        self.SetIcon(ico)
+
         self.checkboxes = {}
         self.parent = parent
         self.initialize()
