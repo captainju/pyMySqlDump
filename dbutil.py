@@ -4,7 +4,7 @@
 import MySQLdb
 import subprocess
 
-db = MySQLdb.connect(host="localhost", user="root", passwd="")
+db = MySQLdb.connect(host="localhost", user="root", passwd="", port=3306)
 
 
 def getDatabasesNamesAndSizes():
@@ -23,10 +23,10 @@ def dumpDatabase(dbName, path):
     cmd = cmd % ("root", "", dbName, path, dbName)
     try:
         retcode = subprocess.call(cmd, shell=True)
-        if retcode < 0:
-            print >>subprocess.sys.stderr, "Child was terminated by signal", -retcode
-        else:
-            print >>subprocess.sys.stderr, "Child returned", retcode
+        # if retcode < 0:
+        #     print >>subprocess.sys.stderr, "Child was terminated by signal", -retcode
+        # else:
+        #     print >>subprocess.sys.stderr, "Child returned", retcode
     except OSError as e:
         print >>subprocess.sys.stderr, "Execution failed:", e
 

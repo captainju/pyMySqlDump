@@ -35,7 +35,7 @@ class simpleapp_wx(wx.Frame):
             sizer.Add(checkBox, (columnNum, 0))
             columnNum = columnNum + 1
 
-        dumpButton = wx.Button(self, -1, label="Dump'em all !")
+        dumpButton = wx.Button(self, -1, label="Dump'em !")
         sizer.Add(dumpButton, (columnNum, 1))
         self.Bind(wx.EVT_BUTTON, self.OnDumpButtonClick, dumpButton)
 
