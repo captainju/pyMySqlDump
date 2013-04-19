@@ -4,7 +4,12 @@
 import MySQLdb
 import subprocess
 
-db = MySQLdb.connect(host="localhost", user="root", passwd="", port=3306)
+host = "localhost"
+user = "root"
+password = ""
+port = 3306
+
+db = MySQLdb.connect(host=host, user=user, passwd=password, port=port)
 
 
 def getDatabasesNamesAndSizes():
@@ -18,9 +23,9 @@ def getDatabasesNamesAndSizes():
 
 
 def dumpDatabase(dbName, path):
-    print "dump " + dbName
-    cmd = "mysqldump -u %s --password=%s --lock-tables=false --skip-comments --add-drop-database %s | gzip > \"%s/%s.sql.gz\""
-    cmd = cmd % ("root", "", dbName, path, dbName)
+    print "dumping " + dbName
+    cmd = "mysqldump -u %s --password=%s -h %s --port=%s --lock-tables=false --routines --skip-comments --add-drop-database --databases %s | gzip > \"%s/%s.sql.gz\""
+    cmd = cmd % (user, password, host, port, dbName, path, dbName)
     try:
         retcode = subprocess.call(cmd, shell=True)
         # if retcode < 0:

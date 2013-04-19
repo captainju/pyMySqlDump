@@ -35,9 +35,9 @@ class simpleapp_wx(wx.Frame):
             sizer.Add(checkBox, (columnNum, 0))
             columnNum = columnNum + 1
 
-        dumpButton = wx.Button(self, -1, label="Dump'em !")
-        sizer.Add(dumpButton, (columnNum, 1))
-        self.Bind(wx.EVT_BUTTON, self.OnDumpButtonClick, dumpButton)
+        self.dumpButton = wx.Button(self, -1, label="Dump'em !")
+        sizer.Add(self.dumpButton, (columnNum, 1))
+        self.Bind(wx.EVT_BUTTON, self.OnDumpButtonClick, self.dumpButton)
 
         allButton = wx.Button(self, -1, label="all")
         sizer.Add(allButton, (columnNum, 0))
@@ -57,11 +57,26 @@ class simpleapp_wx(wx.Frame):
         if path != '':
             path = path + "/" + strftime("%Y%m%d_%H%M%S", gmtime())
             os.makedirs(path)
+
             print "dumping into "+path+"..."
+
+            howManyBases = 0
+            counter = 0
             for dbname in self.checkboxes.iterkeys():
                 if self.checkboxes[dbname].GetValue():
+                    howManyBases += 1
+
+            for dbname in self.checkboxes.iterkeys():
+                if self.checkboxes[dbname].GetValue():
+                    counter += 1
+                    #marche pas, pas de refresh ni update avant le prochain loop de l'appli
+                    #todo : utilisation des threads
+                    self.dumpButton.SetLabel("%s/%s" % (counter, howManyBases))
                     dbutil.dumpDatabase(dbname, path)
+
             print "Complete !"
+            self.dumpButton.SetLabel("Dump'em !")
+            wx.MessageBox("Complete !", "Info", wx.OK | wx.ICON_INFORMATION)
 
     def OnAllButtonClick(self, event):
         for dbname in self.checkboxes.iterkeys():
@@ -72,12 +87,12 @@ class simpleapp_wx(wx.Frame):
             self.checkboxes[dbname].SetValue(False)
 
     def GetStorePath(self):
-        self.dirname = ''
+        dirname = ''
         dlg = wx.DirDialog(self, "Where to put ?", "")
         if dlg.ShowModal() == wx.ID_OK:
-            self.dirname = dlg.GetPath()
+            dirname = dlg.GetPath()
         dlg.Destroy()
-        return self.dirname
+        return dirname
 
 
 if __name__ == "__main__":
