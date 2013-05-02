@@ -30,6 +30,8 @@ class GetConnectionInfos(wx.Dialog):
 
         self.InitUI()
         self.SetSize((250, 200))
+        ico = wx.Icon('pyMySqlDump.ico', wx.BITMAP_TYPE_ICO)
+        self.SetIcon(ico)
 
     def InitUI(self):
 
@@ -83,7 +85,11 @@ class GetConnectionInfos(wx.Dialog):
         connectionInfos.port = int(self.txtCtrl2.GetValue())
         connectionInfos.user = self.txtCtrl3.GetValue()
         connectionInfos.password = self.txtCtrl4.GetValue()
-        self.Close()
+        if dbutil.tryConnect(connectionInfos) is not None:
+            self.Close()
+        else:
+            wx.MessageBox('Try again !', "Info", wx.OK | wx.ICON_EXCLAMATION)
+            self.txtCtrl1.SetFocus()
 
     def OnExit(self, e):
         self.Destroy()
@@ -111,13 +117,15 @@ class DumpingApp(wx.Frame):
 
         if self.isConnected:
             self.populate_db_dump()
+        else:
+            exit()
 
     def get_connection_info(self):
-        while dbutil.tryConnect(connectionInfos) is None:
+        if dbutil.tryConnect(connectionInfos) is None:
             chgdep = GetConnectionInfos(None, title='MySQL connection')
             chgdep.ShowModal()
             chgdep.Destroy()
-        return True
+        return dbutil.tryConnect(connectionInfos)
 
     def populate_db_dump(self):
         sizer = wx.GridBagSizer()
