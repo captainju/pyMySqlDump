@@ -4,16 +4,25 @@
 import MySQLdb
 import subprocess
 
-host = "localhost"
-user = "root"
-password = ""
-port = 3306
 
-db = MySQLdb.connect(host=host, user=user, passwd=password, port=port)
+class ConnectionInfos():
+    def __init__(self, host="localhost", user="root", password="", port=3306):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.port = port
 
 
-def getDatabaseNamesAndSizes():
-    cur = db.cursor()
+def tryConnect(connectionInfo):
+    try:
+        db = MySQLdb.connect(host=connectionInfo.host, user=connectionInfo.user, passwd=connectionInfo.password, port=connectionInfo.port)
+        return db
+    except MySQLdb.OperationalError:
+        return None
+
+
+def getDatabaseNamesAndSizes(connectionInfo):
+    cur = tryConnect(connectionInfo).cursor()
     cur.execute("SELECT table_schema \"name\", sum( data_length + index_length ) / 1024 / 1024 \"size\" FROM information_schema.TABLES GROUP BY table_schema;")
     result = []
     for row in cur.fetchall():
@@ -23,10 +32,14 @@ def getDatabaseNamesAndSizes():
     return result
 
 
-def dumpDatabase(dbName, path):
+def dumpDatabase(dbName, path, connectionInfo):
     cmd = "mysqldump -u %s --password=%s -h %s --port=%s --lock-tables=false --routines --skip-comments --add-drop-database --databases %s | gzip > \"%s/%s.sql.gz\""
-    cmd = cmd % (user, password, host, port, dbName, path, dbName)
+    cmd = cmd % (connectionInfo.user, connectionInfo.password, connectionInfo.host, connectionInfo.port, dbName, path, dbName)
     try:
         subprocess.call(cmd, shell=True)
     except OSError as e:
         print >>subprocess.sys.stderr, "Execution failed:", e
+
+if __name__ == "__main__":
+    connectionInfos = ConnectionInfos(password="")
+    print getDatabaseNamesAndSizes(connectionInfos)

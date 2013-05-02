@@ -14,12 +14,80 @@ except ImportError:
 
 
 dumpEvent, EVT_DUMP_EVENT = wx.lib.newevent.NewEvent()
+connectionInfos = dbutil.ConnectionInfos()
 
 
 def dump_thread(i, basesNb, frame, wx, dbname, path):
-    dbutil.dumpDatabase(dbname, path)
+    dbutil.dumpDatabase(dbname, path, connectionInfos)
     evt = dumpEvent(number=i, basesNb=basesNb)
     wx.PostEvent(frame, evt)
+
+
+class GetConnectionInfos(wx.Dialog):
+
+    def __init__(self, *args, **kw):
+        super(GetConnectionInfos, self).__init__(*args, **kw)
+
+        self.InitUI()
+        self.SetSize((250, 200))
+
+    def InitUI(self):
+
+        pnl = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        sb = wx.StaticBox(pnl, label='MySQL Parameters')
+        sbs = wx.StaticBoxSizer(sb, orient=wx.VERTICAL)
+
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txtCtrl1 = wx.TextCtrl(pnl)
+        self.txtCtrl1.write(connectionInfos.host)
+        hbox1.Add(self.txtCtrl1, flag=wx.LEFT, border=5)
+        sbs.Add(hbox1)
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txtCtrl2 = wx.TextCtrl(pnl)
+        self.txtCtrl2.write(str(connectionInfos.port))
+        hbox2.Add(self.txtCtrl2, flag=wx.LEFT, border=5)
+        sbs.Add(hbox2)
+        hbox3 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txtCtrl3 = wx.TextCtrl(pnl)
+        self.txtCtrl3.write(connectionInfos.user)
+        hbox3.Add(self.txtCtrl3, flag=wx.LEFT, border=5)
+        sbs.Add(hbox3)
+        hbox4 = wx.BoxSizer(wx.HORIZONTAL)
+        self.txtCtrl4 = wx.TextCtrl(pnl, style=wx.TE_PROCESS_ENTER)
+        self.txtCtrl4.write(connectionInfos.password)
+        self.txtCtrl4.Bind(wx.EVT_TEXT_ENTER, self.OnTry, self.txtCtrl4)
+        hbox4.Add(self.txtCtrl4, flag=wx.LEFT, border=5)
+        sbs.Add(hbox4)
+
+        pnl.SetSizer(sbs)
+        hbox5 = wx.BoxSizer(wx.HORIZONTAL)
+        okButton = wx.Button(self, label='Try')
+        closeButton = wx.Button(self, label='Exit')
+        hbox5.Add(okButton)
+        hbox5.Add(closeButton, flag=wx.LEFT, border=5)
+
+        vbox.Add(pnl, proportion=1, flag=wx.ALL | wx.EXPAND, border=5)
+        vbox.Add(hbox5, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+
+        self.SetSizer(vbox)
+
+        okButton.Bind(wx.EVT_BUTTON, self.OnTry)
+        closeButton.Bind(wx.EVT_BUTTON, self.OnExit)
+
+        self.txtCtrl1.SetFocus()
+
+    def OnTry(self, e):
+        connectionInfos.host = self.txtCtrl1.GetValue()
+        connectionInfos.port = int(self.txtCtrl2.GetValue())
+        connectionInfos.user = self.txtCtrl3.GetValue()
+        connectionInfos.password = self.txtCtrl4.GetValue()
+        self.Close()
+
+    def OnExit(self, e):
+        self.Destroy()
+        exit()
 
 
 class DumpingApp(wx.Frame):
@@ -35,12 +103,29 @@ class DumpingApp(wx.Frame):
         self.checkboxes = {}
         self.abort = False
         self.threads = {}
-        self.Bind(EVT_DUMP_EVENT, self.handler_dump_event)
 
+        #do we have a connection ?
+        self.isConnected = False
+        if not self.isConnected:
+            self.isConnected = self.get_connection_info()
+
+        if self.isConnected:
+            self.populate_db_dump()
+
+    def get_connection_info(self):
+        while dbutil.tryConnect(connectionInfos) is None:
+            chgdep = GetConnectionInfos(None, title='MySQL connection')
+            chgdep.ShowModal()
+            chgdep.Destroy()
+        return True
+
+    def populate_db_dump(self):
         sizer = wx.GridBagSizer()
 
+        self.Bind(EVT_DUMP_EVENT, self.handler_dump_event)
+
         columnNum = 0
-        for dbinfo in dbutil.getDatabaseNamesAndSizes():
+        for dbinfo in dbutil.getDatabaseNamesAndSizes(connectionInfos):
             checkBox = wx.CheckBox(self, -1, label=dbinfo[0]+" ~"+str(int(dbinfo[1]))+" MB")
             checkBox.SetValue(True)
             self.checkboxes[dbinfo[0]] = checkBox
