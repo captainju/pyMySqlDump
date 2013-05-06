@@ -174,7 +174,7 @@ class DumpingApp(wx.Frame):
 
         path = self.get_store_path()
         if path != '':
-            path = path + "/" + strftime("%Y%m%d_%H%M%S", gmtime())
+            path = path + os.sep + strftime("%Y%m%d_%H%M%S", gmtime())
             os.makedirs(path)
             self.threads = {}
             howManyBases = counter
