@@ -30,7 +30,7 @@ class GetConnectionInfos(wx.Dialog):
 
         self.InitUI()
         self.SetSize((250, 200))
-        ico = wx.Icon('pyMySqlDump.ico', wx.BITMAP_TYPE_ICO)
+        ico = wx.Icon(os.path.join(getProgramFolder(), 'pyMySqlDump.ico'), wx.BITMAP_TYPE_ICO)
         self.SetIcon(ico)
 
     def InitUI(self):
@@ -103,7 +103,7 @@ class DumpingApp(wx.Frame):
         self.initialize()
 
     def initialize(self):
-        ico = wx.Icon('pyMySqlDump.ico', wx.BITMAP_TYPE_ICO)
+        ico = wx.Icon(os.path.join(getProgramFolder(), 'pyMySqlDump.ico'), wx.BITMAP_TYPE_ICO)
         self.SetIcon(ico)
 
         self.checkboxes = {}
@@ -225,6 +225,12 @@ class DumpingApp(wx.Frame):
             wx.MessageBox('Complete !', "Info", wx.OK | wx.ICON_INFORMATION)
             self.threads = {}
 
+
+def getProgramFolder():
+    moduleFile = __file__
+    moduleDir = os.path.split(os.path.abspath(moduleFile))[0]
+    programFolder = os.path.abspath(moduleDir)
+    return programFolder
 
 if __name__ == "__main__":
     app = wx.App()
